@@ -1,0 +1,26 @@
+extend layout
+block additional_scripts
+    script(type='text/javascript').
+        var events_data = !{JSON.stringify(events)};
+    script(src='js/renderTable.js')
+
+block content
+    span
+    select#room(name='category')
+    //.h1(class='text-center') #{events.name}
+    .table-responsive
+        table.table#table_events
+            thead
+                tr
+                    th Summary
+                    th.info Owner
+                    th.success Start time (UTC)
+                    th.warning End time (UTC)
+            tbody
+                //each event in events.schedules
+                //    tr
+                //        td #{event.summary}
+                //        td.info #{event.owner}
+                //        td.success #{event.start_time}
+                //        td.warning #{event.end_time}
+
