@@ -36,5 +36,11 @@ router.get('/rooms', auth, function (req, res) {
     });
 });
 
+router.get('/rooms/:roomId', auth, function (req, res) {
+    oauthClient.getCalendar(req.query.auth_code, req.params.roomId, function(room){
+        res.status(200).json({'room': room});
+    });
+});
+
 
 module.exports = router;

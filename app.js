@@ -3,10 +3,23 @@ var auth = new googleAuth();
 var persist = require('./persist');
 var eventUtils = require('./eventUtils');
 var SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
-
-// Hardcoded the client id, secret and redirect_url
-_oauth2Client = new auth.OAuth2(‘client_id','client_secret', 'http://localhost:3000/callback_authorized');
 var google = require('googleapis');
+var fs = require('fs');
+
+
+// Needs the client_secret.json provided by google in the same folder as app.js
+fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+    if (err) {
+        console.log('Error loading client secret file: ' + err);
+        return;
+    }
+    var credentials = JSON.parse(content);
+    var clientSecret = credentials.installed.client_secret;
+    var clientId = credentials.installed.client_id;
+    var redirectUrl = credentials.installed.redirect_uris[0];
+    var auth = new googleAuth();
+    _oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+});
 
 
 var ROOMS = [
@@ -39,9 +52,12 @@ module.exports = {
                 return;
             }
             console.log(token);
-            persist.storeUser(token.access_token, token.refresh_token, token.token_type, token.expiry_date, code, function(){
+            persist.storeUser(token.access_token, token.refresh_token, token.token_type, token.expiry_date, code,
+                //If things go right, callback to
+                function(){
                 callback(code);
             },
+                //In case things go wrong just next() by now
                 function(){
                     next();
                 });
@@ -87,6 +103,40 @@ module.exports = {
 
         });
 
+
+    },
+
+    getCalendar: function (code, roomId, callback) {
+        var calendar = google.calendar('v3');
+        var roomSchedules = [];
+        persist.getCredentials(code, function (credentials_info) {
+            _oauth2Client.credentials = credentials_info;
+
+            calendar.events.list({
+                auth: _oauth2Client,
+                calendarId: roomId,
+                timeMin: (new Date()).toISOString(),
+                maxResults: 10,
+                timeZone: 'UTC',
+                singleEvents: true,
+                orderBy: 'startTime'
+            }, function (err, response) {
+                if (err) {
+                    console.log('The API returned an error: ' + err);
+                    return;
+                }
+                var roomSchedule = {
+                    name: response.summary,
+                    schedules: [] // TODO: probably it is better to name it "events"
+                };
+                response.items.forEach(event => roomSchedule.schedules.push(eventUtils.createScheduleItem(event)));
+
+                callback(roomSchedule);
+
+            });
+
+
+        });
 
     }
 
