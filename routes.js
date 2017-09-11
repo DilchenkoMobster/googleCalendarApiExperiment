@@ -4,8 +4,8 @@ var oauthClient = require('./app.js');
 var persist = require('./persist');
 
 var auth = function(req, res, next) {
-    if (req.query && req.query.auth_code != null)
-        persist.userExists(req.query.auth_code, function(){
+    if (req.query && req.headers.authorization != null)
+        persist.userExists(req.headers.authorization, function(){
             next();
         }, function(error){
             console.log(error);
@@ -31,14 +31,14 @@ router.get('/callback_authorized', function (req, res) {
 });
 
 router.get('/rooms', auth, function (req, res) {
-    oauthClient.getCalendars(req.query.auth_code, function(rooms){
-        res.status(200).json({'rooms': rooms});
+    oauthClient.getCalendars(req.headers.authorization, req.query, function(rooms){
+        res.status(200).json(rooms);
     });
 });
 
 router.get('/rooms/:roomId', auth, function (req, res) {
-    oauthClient.getCalendar(req.query.auth_code, req.params.roomId, function(room){
-        res.status(200).json({'room': room});
+    oauthClient.getCalendar(req.headers.authorization, req.params, req.query, function(room){
+        res.status(200).json(room);
     });
 });
 

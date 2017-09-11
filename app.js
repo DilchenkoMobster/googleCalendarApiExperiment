@@ -51,7 +51,6 @@ module.exports = {
                 console.log('Error while trying to retrieve access token', err);
                 return;
             }
-            console.log(token);
             persist.storeUser(token.access_token, token.refresh_token, token.token_type, token.expiry_date, code,
                 //If things go right, callback to
                 function(){
@@ -63,9 +62,10 @@ module.exports = {
                 });
         });
     },
-    getCalendars: function(code, callback) {
+    getCalendars: function(code, reqQuery, callback) {
         var calendar = google.calendar('v3');
         var roomSchedules = [];
+        var promiseCounter = 0;
         persist.getCredentials(code, function(credentials_info){
             _oauth2Client.credentials = credentials_info;
             ROOMS.forEach( room => {
@@ -74,7 +74,8 @@ module.exports = {
                     auth: _oauth2Client,
                     calendarId: room.calendarId,
                     timeMin: (new Date()).toISOString(),
-                    maxResults: 10,
+                    timeMax: new Date(new Date().setHours(23,59,59,999)).toISOString(),
+                    maxResults: 100, //max is 250
                     timeZone: 'UTC',
                     singleEvents: true,
                     orderBy: 'startTime'
@@ -87,14 +88,23 @@ module.exports = {
                         name: response.summary,
                         schedules: [] // TODO: probably it is better to name it "events"
                     };
-                    response.items.forEach(event => roomSchedule.schedules.push(eventUtils.createScheduleItem(event)));
-                    console.log('CALLING RESOLVE');
-                    resolve(roomSchedule);
+                    // roomSchedule = getFilteredResults(response.items);
+                    getFilteredResults(response.items, reqQuery,function(resultArray){
+                        console.log('CALLING RESOLVE');
+                        roomSchedule.schedules = resultArray;
+                        resolve(roomSchedule);
+
+                    });
+
                 });
         });
+
             googleApiUsePromise.then(result => {
-                roomSchedules.push(result);
-            if (roomSchedules.length === ROOMS.length) {
+                promiseCounter++;
+                if(result.schedules.length >= 1){
+                    roomSchedules.push(result);
+            }
+            if (promiseCounter === ROOMS.length) {
                 callback(roomSchedules);
             }
         },
@@ -106,7 +116,7 @@ module.exports = {
 
     },
 
-    getCalendar: function (code, roomId, callback) {
+    getCalendar: function (code, reqParams, reqQuery, callback) {
         var calendar = google.calendar('v3');
         var roomSchedules = [];
         persist.getCredentials(code, function (credentials_info) {
@@ -114,9 +124,10 @@ module.exports = {
 
             calendar.events.list({
                 auth: _oauth2Client,
-                calendarId: roomId,
+                calendarId: reqParams.roomId,
                 timeMin: (new Date()).toISOString(),
-                maxResults: 10,
+                timeMax: new Date(new Date().setHours(23,59,59,999)).toISOString(),
+                maxResults: 100,
                 timeZone: 'UTC',
                 singleEvents: true,
                 orderBy: 'startTime'
@@ -129,15 +140,84 @@ module.exports = {
                     name: response.summary,
                     schedules: [] // TODO: probably it is better to name it "events"
                 };
-                response.items.forEach(event => roomSchedule.schedules.push(eventUtils.createScheduleItem(event)));
 
+                getFilteredResults(response.items, reqQuery,function(resultArray){
+                    roomSchedule = {};
+                if(resultArray.length >0){
+                    roomSchedule.schedules = resultArray;
+                }
                 callback(roomSchedule);
+
+
+                });
+
 
             });
 
 
         });
 
+    }
+
+}
+
+var filterStrings = ['email'];
+
+function getFilteredResults(results, reqParams, callback){
+
+    var resultArray = [];
+    var itemsProcessed = 0;
+    if(!hasQueryParameters(reqParams)){
+        results.forEach(function(item){
+            console.log('Entered');
+
+            itemsProcessed ++
+            resultArray.push(eventUtils.createScheduleItem(item));
+            if(itemsProcessed === results.length && resultArray.length > 0){
+                callback(resultArray);
+            }
+        });
+
+
+    }else{
+
+        results.forEach(function(item){
+            itemsProcessed ++
+
+            var isIncluded = false;
+            if(filterStrings in reqParams){
+                item.attendees.some(function(attendee){
+                    if(reqParams.email == attendee.email){
+                        isIncluded = true;
+                        return true;
+                    }
+                });
+                if(isIncluded) {
+                    resultArray.push(eventUtils.createScheduleItem(item));
+                }
+                if(itemsProcessed === results.length){
+                    callback(resultArray);
+                }
+            }
+
+        });
+
+    }
+
+}
+
+function hasQueryParameters(reqParams){
+    if(reqParams != null){
+        var hasQuery = false;
+        filterStrings.some(function(filter){
+            if (filter in reqParams)
+            {
+                console.log('Has attribute');
+                hasQuery = true;
+                return true;
+            }
+        });
+        return hasQuery;
     }
 
 }

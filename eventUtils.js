@@ -4,7 +4,7 @@ var createScheduleItem = function (event) {
         start_time: event.start.dateTime,
         end_time: event.end.dateTime,
         owner: event.creator.email,
-        atendees: event.atendees
+        atendees: event.attendees
     };
 }
 

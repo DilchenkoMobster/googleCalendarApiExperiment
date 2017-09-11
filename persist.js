@@ -21,14 +21,18 @@ module.exports = {
         user.save();
         callbackSuccess();
     },
-    userExists: function(auth_code, callbackSuccess, callbackFailure){
+    userExists: function(auth_header, callbackSuccess, callbackFailure){
+        var tokenized_auth = auth_header.split(' ');
+        var auth_code = tokenized_auth[tokenized_auth.length - 1];
         User.findOne({ 'auth_code':  auth_code}, function (err, user) {
             if (err) callbackFailure('Error in the query');
             if(user != null) callbackSuccess(user);
             else callbackFailure('Not found');
         });
     },
-    getCredentials: function(auth_code, callbackSuccess){
+    getCredentials: function(auth_header, callbackSuccess){
+        var tokenized_auth = auth_header.split(' ');
+        var auth_code = tokenized_auth[tokenized_auth.length - 1];
         User.findOne({ 'auth_code':  auth_code}, function (err, user) {
             var credentials = {'access_token': user.access_token, 'refresh_token': user.refresh_token,
             'token_type': user.token_type, 'expiry_date': user.expiry_date};
