@@ -12,6 +12,12 @@ var ROOMS = [
     }
 ]
 
+function filterOnlyRelatedRooms(roomsInfos, attendeeEmail) {
+    roomsInfos.forEach(roomInfo =>
+        roomInfo.events = roomInfo.events.filter(event => event.attendees.some(attendee => attendee.email === attendeeEmail)));
+    return roomsInfos.filter(roomInfo => roomInfo.events.length !== 0);
+}
+
 exports.handler = function(event, context, callback) {
 
     console.log("Calendar lambda started");
@@ -21,7 +27,7 @@ exports.handler = function(event, context, callback) {
     var auth = new googleAuth();
 
 
-    var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+    var oauth2Client = new auth.OAuth2(clientId, clientSecret);
 
     oauth2Client.setCredentials({
         access_token: event.accessToken,
@@ -29,7 +35,7 @@ exports.handler = function(event, context, callback) {
     });
 
     var calendar = google.calendar('v3');
-    var roomSchedules = [];
+    var roomsInfos = [];
     ROOMS.forEach(room => {
         var googleApiUsePromise = new Promise((resolve, reject) => {
             calendar.events.list({
@@ -44,30 +50,31 @@ exports.handler = function(event, context, callback) {
                 if (err) {
                     reject(err);
                 } else {
-                    var roomSchedule = {
+                    var roomInfo = {
                         name: response.summary,
-                        schedules: [] // TODO: probably it is better to name it "events"
+                        events: [] // TODO: probably it is better to name it "events"
                     };
-                    response.items.forEach(event => roomSchedule.schedules.push({
+                    response.items.forEach(event => roomInfo.events.push({
                         summary: event.summary,
                         start_time: event.start.dateTime,
                         end_time: event.end.dateTime,
                         owner: event.creator.email,
                         attendees: event.attendees
                     }));
-                    resolve(roomSchedule);
+                    resolve(roomInfo);
                 }
             });
         });
         googleApiUsePromise.then(
             result => {
-                roomSchedules.push(result);
-                if (roomSchedules.length === ROOMS.length) {
-                    console.log(roomSchedules);
-                    var attendeeRelatedRoomSchedules =
-                        roomSchedules.filter(roomSchedule => roomSchedule.attendees.some(attendee => attendee.email === event.email));
-                    console.log(attendeeRelatedRoomSchedules);
-                    callback(null, attendeeRelatedRoomSchedules);
+                roomsInfos.push(result);
+                if (roomsInfos.length === ROOMS.length) {
+                    if (event.email) {
+                        var attendeeRelatedRoomsInfos = filterOnlyRelatedRooms(roomsInfos, event.email);
+                        callback(null, attendeeRelatedRoomsInfos);
+                    } else {
+                        callback(null, roomsInfos);
+                    }
                 }
             },
             error => {
