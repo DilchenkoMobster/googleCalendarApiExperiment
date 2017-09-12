@@ -9,6 +9,18 @@ var ROOMS = [
     amsFrisco = {
         calendarId: "mobiquityinc.com_2d3237333336353639353331@resource.calendar.google.com",
         name: "AMS-Frisco"
+    },
+    amsEurope = {
+        calendarId: "mobiquityinc.com_2d3139333131343038333936@resource.calendar.google.com",
+        name: "AMS-Europe"
+    },
+    amsUsa = {
+        calendarId: "mobiquityinc.com_2d3638343238303138363933@resource.calendar.google.com",
+        name: "AMS-USA"
+    },
+    amsAhmedabad = {
+        calendarId: "mobiquityinc.com_2d3537343130373739323836@resource.calendar.google.com",
+        name: "AMS-Ahmedabad"
     }
 ]
 
