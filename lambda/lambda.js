@@ -41,8 +41,9 @@ exports.handler = function(event, context, callback) {
             calendar.events.list({
                 auth: oauth2Client,
                 calendarId: room.calendarId,
-                timeMin: (new Date()).toISOString(),
-                maxResults: 10,
+                timeMin: new Date().toISOString(),
+                timeMax: new Date(new Date().setHours(23,59,59,999)).toISOString(),
+                maxResults: 100,
                 timeZone: 'UTC',
                 singleEvents: true,
                 orderBy: 'startTime'
@@ -52,7 +53,7 @@ exports.handler = function(event, context, callback) {
                 } else {
                     var roomInfo = {
                         name: response.summary,
-                        events: [] // TODO: probably it is better to name it "events"
+                        events: []
                     };
                     response.items.forEach(event => roomInfo.events.push({
                         summary: event.summary,
@@ -70,6 +71,7 @@ exports.handler = function(event, context, callback) {
                 roomsInfos.push(result);
                 if (roomsInfos.length === ROOMS.length) {
                     if (event.email) {
+                        console.log(roomsInfos);
                         var attendeeRelatedRoomsInfos = filterOnlyRelatedRooms(roomsInfos, event.email);
                         callback(null, attendeeRelatedRoomsInfos);
                     } else {
