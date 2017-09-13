@@ -45,6 +45,12 @@ module.exports = {
         callback(authUrl);
     },
 
+    isAdmin: function(email, callback){
+        console.log(email);
+       var admins = ['aperez@mobiquityinc.com','slentsov@mobiquityinc.com'];
+       admins.indexOf(email) > -1 ? callback({"isAdmin": true}) : callback({"isAdmin": false});
+    },
+
     exchangeCode: function(code, callback) {
         _oauth2Client.getToken(code, function (err, token) {
             if (err) {

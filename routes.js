@@ -42,5 +42,10 @@ router.get('/rooms/:roomId', auth, function (req, res) {
     });
 });
 
+router.get('/isAdmin', function (req, res) {
+    oauthClient.isAdmin(req.query.email, function(isAdmin){
+        res.status(200).json(isAdmin);
+    });
+});
 
 module.exports = router;
