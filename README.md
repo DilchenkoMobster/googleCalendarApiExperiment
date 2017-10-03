@@ -13,3 +13,17 @@ Endpoints
   
 Both endpoints allow to add query parameter "email".
 
+
+----------------------
+----------------------
+
+For the latest commit (The one where mocha+chai and signature headers have been added):
+* Set up a mongo environment (same as before)
+* Make a POST call to /createUser with an email as body parameter
+  * Client will receive its public and private key, must store them
+* Make POST call to /protected with the header signature. The header signature must contain:
+  * Public key
+  * Timestamp
+  * Signature (md5 of private_key + timestamp + pub_key + body)
+
+Error codes and strings are toy ones yet (need to discuss which should be returned and when)
