@@ -1,13 +1,10 @@
-var persist = require('./persist');
-var tokenUtils = require("./tokenUtils.js");
-var utilsObject = require('./utils.js');
+var persist = require('./persist/persist');
+var tokenUtils = require("./utils/tokenUtils.js");
+var utilsObject = require('./utils/utils.js');
 var errorConstants = require('./errorConstants');
-var User = require('./user.js');
+var User = require('./persist/entities/user.js');
 var mongoose    = require('mongoose');
-var config = require('./config'); // get our config file
-
-
-
+var config = require('../config/config'); // get our config file
 
 mongoose.connect(config.database); // connect to database
 

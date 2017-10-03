@@ -1,14 +1,10 @@
 var chai = require('chai');
-var expect = chai.expect; // we are using the "expect" style of Chai
-var endpointApp = require('../app.js');
-var utilsObject = require('../utils.js');
-var utilsToken = require('../tokenUtils.js');
+var expect = chai.expect;
 var request = require('request');
-var nock = require('nock');
 
-var errorConstants = require('../errorConstants');
+var errorConstants = require('../src/errorConstants');
 
-describe('Authentication tests', function (done) {
+describe('Authentication tests', function () {
     var local_body;
     it('Valid headers should grant access to the endpoint', function(done) {
         var expectedResult = {"messageCode":"2000","errorMessage":"OK"};

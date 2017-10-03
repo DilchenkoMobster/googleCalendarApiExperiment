@@ -1,16 +1,16 @@
 var googleAuth = require('google-auth-library');
 var auth = new googleAuth();
-var persist = require('./persist');
-var eventUtils = require('./eventUtils');
+var persist = require('./persist/persist');
+var eventUtils = require('./utils/eventUtils');
 var SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 var google = require('googleapis');
 var fs = require('fs');
 var path = require("path");
-var utilsObject = require('./utils.js');
+var utilsObject = require('./utils/utils.js');
 var errorConstants = require('./errorConstants');
 
 // Needs the client_secret.json provided by google in the same folder as app.js
-fs.readFile(path.resolve(__dirname) + '/client_secret.json', function processClientSecrets(err, content) {
+fs.readFile(path.resolve(__dirname) + '/../config/client_secret.json', function processClientSecrets(err, content) {
 
     if (err) {
         console.log('Error loading client secret file: ' + err);

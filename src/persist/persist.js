@@ -1,7 +1,7 @@
 
 var mongoose    = require('mongoose');
-var User   = require('./user');
-var config = require('./config'); // get our config file
+var User   = require('./entities/user');
+var config = require('../../config/config'); // get our config file
 
 
 mongoose.connect(config.database); // connect to database

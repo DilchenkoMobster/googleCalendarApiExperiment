@@ -1,11 +1,11 @@
 var chai = require('chai');
 var expect = chai.expect;
-var endpointApp = require('../app.js');
-var utilsObject = require('../utils.js');
-var utilsToken = require('../tokenUtils.js');
+var endpointApp = require('../src/app.js');
+var utilsObject = require('../src/utils/utils.js');
+var utilsToken = require('../src/utils/tokenUtils.js');
 var request = require('request');
 
-var errorConstants = require('../errorConstants');
+var errorConstants = require('../src/errorConstants');
 
 describe('isAdmin', function () {
     it('/isAdmin should return an invalidFormat error if an invalid email is passed', function () {
