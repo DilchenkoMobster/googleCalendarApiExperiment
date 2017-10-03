@@ -5,12 +5,16 @@ var eventUtils = require('./eventUtils');
 var SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 var google = require('googleapis');
 var fs = require('fs');
-
+var path = require("path");
+var utilsObject = require('./utils.js');
+var errorConstants = require('./errorConstants');
 
 // Needs the client_secret.json provided by google in the same folder as app.js
-fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+fs.readFile(path.resolve(__dirname) + '/client_secret.json', function processClientSecrets(err, content) {
+
     if (err) {
         console.log('Error loading client secret file: ' + err);
+        console.log(path.resolve(__dirname) + '/client_secret.json');
         return;
     }
     var credentials = JSON.parse(content);
@@ -46,9 +50,15 @@ module.exports = {
     },
 
     isAdmin: function(email, callback){
-        console.log(email);
-       var admins = ['aperez@mobiquityinc.com','slentsov@mobiquityinc.com'];
-       admins.indexOf(email) > -1 ? callback({"isAdmin": true}) : callback({"isAdmin": false});
+        var isEmailValid = utilsObject.validateEmail(email);
+        if(isEmailValid){
+            var admins = ['aperez@mobiquityinc.com','slentsov@mobiquityinc.com'];
+            admins.indexOf(email) > -1 ? callback({"isAdmin": true}) : callback({"isAdmin": false});
+        }else{
+            callback(errorConstants.ERROR_INVALID_EMAIL_FORMAT);
+        }
+
+
     },
 
     exchangeCode: function(code, callback) {
@@ -60,8 +70,8 @@ module.exports = {
             persist.storeUser(token.access_token, token.refresh_token, token.token_type, token.expiry_date, code,
                 //If things go right, callback to
                 function(){
-                callback(code);
-            },
+                    callback(token);
+                },
                 //In case things go wrong just next() by now
                 function(){
                     next();
@@ -95,7 +105,7 @@ module.exports = {
                         schedules: [] // TODO: probably it is better to name it "events"
                     };
                     // roomSchedule = getFilteredResults(response.items);
-                    getFilteredResults(response.items, reqQuery,function(resultArray){
+                    utilsObject.getFilteredResults(response.items, reqQuery,function(resultArray){
                         console.log('CALLING RESOLVE');
                         roomSchedule.schedules = resultArray;
                         resolve(roomSchedule);
@@ -107,8 +117,8 @@ module.exports = {
 
             googleApiUsePromise.then(result => {
                 promiseCounter++;
-                if(result.schedules.length >= 1){
-                    roomSchedules.push(result);
+            if(result.schedules.length >= 1){
+                roomSchedules.push(result);
             }
             if (promiseCounter === ROOMS.length) {
                 callback(roomSchedules);
@@ -147,12 +157,12 @@ module.exports = {
                     schedules: [] // TODO: probably it is better to name it "events"
                 };
 
-                getFilteredResults(response.items, reqQuery,function(resultArray){
+                utilsObject.getFilteredResults(response.items, reqQuery,function(resultArray){
                     roomSchedule = {};
-                if(resultArray.length >0){
-                    roomSchedule.schedules = resultArray;
-                }
-                callback(roomSchedule);
+                    if(resultArray.length >0){
+                        roomSchedule.schedules = resultArray;
+                    }
+                    callback(roomSchedule);
 
 
                 });
@@ -163,67 +173,6 @@ module.exports = {
 
         });
 
-    }
-
-}
-
-var filterStrings = ['email'];
-
-function getFilteredResults(results, reqParams, callback){
-
-    var resultArray = [];
-    var itemsProcessed = 0;
-    if(!hasQueryParameters(reqParams)){
-        results.forEach(function(item){
-            console.log('Entered');
-
-            itemsProcessed ++
-            resultArray.push(eventUtils.createScheduleItem(item));
-            if(itemsProcessed === results.length && resultArray.length > 0){
-                callback(resultArray);
-            }
-        });
-
-
-    }else{
-
-        results.forEach(function(item){
-            itemsProcessed ++
-
-            var isIncluded = false;
-            if(filterStrings in reqParams){
-                item.attendees.some(function(attendee){
-                    if(reqParams.email == attendee.email){
-                        isIncluded = true;
-                        return true;
-                    }
-                });
-                if(isIncluded) {
-                    resultArray.push(eventUtils.createScheduleItem(item));
-                }
-                if(itemsProcessed === results.length){
-                    callback(resultArray);
-                }
-            }
-
-        });
-
-    }
-
-}
-
-function hasQueryParameters(reqParams){
-    if(reqParams != null){
-        var hasQuery = false;
-        filterStrings.some(function(filter){
-            if (filter in reqParams)
-            {
-                console.log('Has attribute');
-                hasQuery = true;
-                return true;
-            }
-        });
-        return hasQuery;
     }
 
 }

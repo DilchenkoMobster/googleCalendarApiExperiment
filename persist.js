@@ -21,13 +21,21 @@ module.exports = {
         user.save();
         callbackSuccess();
     },
-    userExists: function(auth_header, callbackSuccess, callbackFailure){
-        var tokenized_auth = auth_header.split(' ');
-        var auth_code = tokenized_auth[tokenized_auth.length - 1];
-        User.findOne({ 'auth_code':  auth_code}, function (err, user) {
-            if (err) callbackFailure('Error in the query');
-            if(user != null) callbackSuccess(user);
-            else callbackFailure('Not found');
+    userExists: function(email, cb){
+
+        User.findOne({ 'email':  email}, function (err, user) {
+            if (err) cb(new Error('Error in the query'));
+            if(user != null) cb(null, user);
+            else cb(null, null);
+        });
+    },
+    findOneByPublicKey: function(public_key, cb){
+
+        User.findOne({ 'public_key':  public_key}, function (err, user) {
+            console.log(user);
+            if (err) cb(new Error('Error in the query'));
+            if(user != null) cb(null, user);
+            else cb(null, null);
         });
     },
     getCredentials: function(auth_header, callbackSuccess){
