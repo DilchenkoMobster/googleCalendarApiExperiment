@@ -7,7 +7,7 @@ module.exports = function(passport){
     passport.use('signature_needed', new CustomStrategy(
         function(req, done) {
             var pub_key = req.headers['public_key'];
-            var timestamp = req.headers['public_key'];
+            var timestamp = req.headers['timestamp'];
             var signature = req.headers['signature'];
 
             persist.findOneByPublicKey(pub_key, function(err,user){
