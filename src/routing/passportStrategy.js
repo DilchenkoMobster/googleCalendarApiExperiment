@@ -4,7 +4,6 @@ var tokenUtils = require('../utils/tokenUtils.js');
 var persist = require('../persist/persist');
 module.exports = function(passport){
 
-
     passport.use('signature_needed', new CustomStrategy(
         function(req, done) {
             var pub_key = req.headers['public_key'];
@@ -30,5 +29,6 @@ module.exports = function(passport){
                 }
             })
         }));
+
     return passport;
 };

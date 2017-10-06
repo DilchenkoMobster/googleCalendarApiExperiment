@@ -8,4 +8,6 @@ module.exports = Object.freeze({
     ERROR_UNKOWN_ERROR: {'messageCode': "00000", 'errorMessage': "Unkown error ocurred"},
     ERROR_USER_NOT_FOUND: {'messageCode': "11111", 'errorMessage': "User not found"},
     ERROR_INVALID_SIGNATURE: { 'messageCode': "22222", 'errorMessage': "Invalid signature"},
+    ERROR_INVALID_GRANT: { 'messageCode': "33333", 'errorMessage': "Invalid grant, please repeat authorization process"},
+
 });

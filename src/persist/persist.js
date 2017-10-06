@@ -21,6 +21,27 @@ module.exports = {
         user.save();
         callbackSuccess();
     },
+    updateUser: function(public_key, access_token, refresh_token, auth_type, expire_date, cb){
+
+        // TODO. Very unlikely to have duplicated pub_keys but possible.
+        User.findOne({ 'public_key':  public_key}, function (err, user) {
+            if (err) cb(new Error('Error in the query'));
+            if(user != null){
+                user.set({ g_access_token: access_token });
+                user.set({ g_refresh_token: refresh_token });
+                user.set({ g_token_type: auth_type });
+                user.set({ g_expiry_date: expire_date });
+                user.save();
+                cb(null,user);
+
+            }
+            else cb(new Error('User not found'), null);
+        });
+
+
+
+
+    },
     userExists: function(email, cb){
 
         User.findOne({ 'email':  email}, function (err, user) {
@@ -38,12 +59,10 @@ module.exports = {
             else cb(null, null);
         });
     },
-    getCredentials: function(auth_header, callbackSuccess){
-        var tokenized_auth = auth_header.split(' ');
-        var auth_code = tokenized_auth[tokenized_auth.length - 1];
-        User.findOne({ 'auth_code':  auth_code}, function (err, user) {
-            var credentials = {'access_token': user.access_token, 'refresh_token': user.refresh_token,
-            'token_type': user.token_type, 'expiry_date': user.expiry_date};
+    getCredentials: function(req, callbackSuccess){
+        User.findOne({ 'public_key':  req.headers['public_key']}, function (err, user) {
+            var credentials = {'access_token': user.g_access_token, 'refresh_token': user.g_refresh_token,
+            'token_type': user.g_token_type, 'expiry_date': user.g_expiry_date};
             callbackSuccess(credentials);
         });
     }

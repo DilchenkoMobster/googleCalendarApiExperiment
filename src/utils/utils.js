@@ -1,5 +1,6 @@
 
 var filterStrings = ['email'];
+var eventUtils = require('./eventUtils');
 
 module.exports = {
 
@@ -45,21 +46,23 @@ module.exports = {
         }
 
     },
-    hasQueryParameters: function (reqParams) {
-        if (reqParams != null) {
-            var hasQuery = false;
-            filterStrings.some(function (filter) {
-                if (filter in reqParams) {
-                    console.log('Has attribute');
-                    hasQuery = true;
-                    return hasQuery;
-                }
-            });
-            return hasQuery;
-        }
-    },
+
     validateEmail: function (email) {
         var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(email);
+    }
+}
+
+function  hasQueryParameters(reqParams) {
+    if (reqParams != null) {
+        var hasQuery = false;
+        filterStrings.some(function (filter) {
+            if (filter in reqParams) {
+                console.log('Has attribute');
+                hasQuery = true;
+                return hasQuery;
+            }
+        });
+        return hasQuery;
     }
 }
