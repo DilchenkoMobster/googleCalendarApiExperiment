@@ -1,24 +1,19 @@
-
 var filterStrings = ['email'];
-
+var eventUtils = require('./eventUtils.js');
 module.exports = {
 
     getFilteredResults: function (results, reqParams, callback) {
 
         var resultArray = [];
         var itemsProcessed = 0;
-        if (!hasQueryParameters(reqParams)) {
+        if (!this.hasQueryParameters(reqParams)) {
             results.forEach(function (item) {
-                console.log('Entered');
-
                 itemsProcessed++
                 resultArray.push(eventUtils.createScheduleItem(item));
                 if (itemsProcessed === results.length && resultArray.length > 0) {
                     callback(resultArray);
                 }
             });
-
-
         } else {
 
             results.forEach(function (item) {
@@ -35,22 +30,17 @@ module.exports = {
                     if (isIncluded) {
                         resultArray.push(eventUtils.createScheduleItem(item));
                     }
-                    if (itemsProcessed === results.length) {
-                        callback(resultArray);
-                    }
                 }
-
             });
+            callback(resultArray);
 
         }
-
     },
     hasQueryParameters: function (reqParams) {
         if (reqParams != null) {
             var hasQuery = false;
             filterStrings.some(function (filter) {
                 if (filter in reqParams) {
-                    console.log('Has attribute');
                     hasQuery = true;
                     return hasQuery;
                 }
@@ -61,5 +51,14 @@ module.exports = {
     validateEmail: function (email) {
         var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(email);
+    },
+    isValidEmail: function (email) {
+        if (this.validateEmail(email)) {
+            if (email.split('@')[1] == 'mobiquityinc.com') {
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 }

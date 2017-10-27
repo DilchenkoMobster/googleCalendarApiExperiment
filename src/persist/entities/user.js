@@ -6,8 +6,7 @@ module.exports = mongoose.model('User', new Schema({
     email: String,
 
     // Server
-    public_key: String,
-    private_key: String,
+    access_token: String,
 
     // Google
     g_auth_code: String,

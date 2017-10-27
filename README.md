@@ -1,29 +1,32 @@
-create client_secret. To create initial clientId and secret you need to follow this wizard https://console.developers.google.com/flows/enableapi?apiid=calendar&authuser=1 The file should have name client_secret.json.
-replace "redirect_uris": ["http://localhost:3000/callback_authorized"]
-run command npm install inside the project directory to install all necessary node modules
-run command node server.js to run the application
-visit localhost:3000/ to start working with an app
+## Requirements:
 
-Auth code:
-  Server will store auth info in a mongo database in port 27107 (default port). By now the only requirement to access is give access to calendar endpoint in google and pass the auth code in the header authorization.
+* Create client_secret. To create initial clientId and secret you need to follow this wizard https://console.developers.google.com/flows/enableapi?apiid=calendar&authuser=1 The file should have name client_secret.json.
+* Replace "redirect_uris": ["http://localhost:3000/callback_authorized"]
+* Run command npm install inside the project directory to install all necessary node modules
+* Run command node server.js to run the application
 
-Endpoints
-  /rooms               Retrieves all rooms
-  /rooms/:roomId       Retrieves rooms with specific ID
+### Auth code:
+  Server will store auth info in a **mongo database** in port 27107 (default port), therefore there needs to exist a server running 
+
+### Endpoints
+ 
+* PUBLIC
+  * GET  **/generateUrl**          Redirects to google authentication flow
+  * GET  **/callback_authorized**  Redirect URI for google authentication flow 
+     
+* PROTECTED (Requires access_token in the header. Access_token is  sent to the client the first time it logs in)
+  * GET  **/rooms**                Retrieves rooms. Requires mandatory argument email
   
-Both endpoints allow to add query parameter "email".
+    * **?email**          Email to be retrieved (by now it allows both Mobiquity and non Mobiquity emails)
+    
+  * POST **/protected**           For testing purposes, to check the auth header
+ 
 
+#### Additional libraries
 
-----------------------
-----------------------
+* **Mocha + Chai** tests. Need to define more
+* **Winston** for logging
 
-For the latest commit (The one where mocha+chai and signature headers have been added):
-* Set up a mongo environment (same as before)
-* Make a POST call to /createUser with an email as body parameter
-  * Client will receive its public and private key, must store them
-* Make POST call to /protected with the header signature. The header signature must contain:
-  * Public key
-  * Timestamp
-  * Signature (md5 of private_key + timestamp + pub_key + body)
-
-Error codes and strings are toy ones yet (need to discuss which should be returned and when)
+#### Additional notes
+* Rooms are hardcoded, only 2 rooms are in the list
+* Admin emails are hardcoded too
